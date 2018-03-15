@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <link rel="stylesheet" href="stylesheets/style.css">
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm"
+        crossorigin="anonymous">
+    <script src="https://code.jquery.com/jquery-3.3.1.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8="
+        crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q"
+        crossorigin="anonymous"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl"
+        crossorigin="anonymous"></script>
+
+    <title>Document</title>
+</head>
+
+<body>
+    <button id="viewCustomers">
+        <a href="manager.html">Main Menu</a>
+    </button>
+    <button id="updateProducts">
+        <a href="updateProducts.html">Update Products</a>
+    </button>
+    <div>
+        <div class="dropdown show mt-3" id="DropDownList">
+            <button class="btn btn-secondary btn-sm dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true"
+                aria-expanded="false">
+                Choose User
+            </button>
+            <div class="dropdown-menu dropdown-menu-right" aria-labelledby="dropdownMenuButton" id="dropList">
+            </div>
+        </div>
+        <form class="needs-validation" novalidate onsubmit="updateCustomer()">
+            <div class="form-row">
+
+                <div class="col-md-3 mb-3">
+                    <fieldset disabled>
+                        <label for="customerId">Customer ID</label>
+                        <input type="text" class="form-control" id="customerId" placeholder="customerId" required>
+                    </fieldset>
+                </div>
+
+            </div>
+            <div class="form-row">
+                <div class="col-md-4 mb-3">
+                    <label for="customerName">Customer Name</label>
+                    <input type="text" class="form-control" id="customerName" placeholder="Customer name" value="" required>
+                    <div class="valid-feedback">
+                        Looks good!
+                    </div>
+                </div>
+                <div class="col-md-4 mb-3">
+                    <label for="access">Access</label>
+                    <input type="text" class="form-control" id="access" placeholder="Access name" value="" required>
+                    <div class="valid-feedback">
+                        Looks good!
+                    </div>
+                </div>
+
+            </div>
+
+            <button class="btn btn-primary" type="submit">Submit</button>
+        </form>
+        <div id="results"></div>
+    </div>
+    <script>
+        function listCust() {
+            let listOfUsers;
+            $("#dropList").empty();
+            $.ajax({ url: "/viewUsers", type: "GET" })
+                .then(function (res) {
+                    let data = JSON.parse(res);
+                    listOfUsers = data;
+                    for (let i = 0; i < data.length; i++) {
+                        $("#dropList").append(`<a class="dropdown-item dropdownProducts" href="#" id="${data[i].user_id}">ID: ${data[i].user_id}, Name: ${data[i].user_name}</a>`)
+                    }
+                    $(".dropdownProducts").each(function (x) {
+                        this.addEventListener("click", function (x) { getCustomerInfo(x, data) })
+                    });
+                })
+        }
+
+        function getCustomerDetails(id) {
+            $("#tableHead").empty();
+            $("#tableBody").empty();
+            $.ajax({ url: `/getCustomerDetails/${id}`, type: "POST" })
+                .then(function (res) {
+                    let data = JSON.parse(res);
+                    console.log(res)
+                    const headerTr = $('<tr>');
+                    const productNameTh = $('<th scope="col">').text("Product");
+                    const costTh = $('<th scope="col">').text("Cost");
+                    headerTr.append(productNameTh, costTh);
+                    $("#tableHead").append(headerTr);
+
+                    for (let i = 0; i < data.length; i++) {
+                        let cost = data[i].product_sales.toFixed(2)
+                        const newTr = $('<tr>');
+                        const productNameTd = $('<td>').text(data[i].product_name);
+                        const costTd = $('<td>').text(`$${cost}`);
+                        newTr.append(productNameTd, costTd);
+                        $("#tableBody").append(newTr);
+                    }
+                })
+        }
+        function getCustomerInfo(evt, data) {
+            const id = parseInt(evt.currentTarget.getAttribute("id"));
+            for (let i = 0; i < data.length; i++) {
+                if (id === data[i].user_id) {
+                    $("#customerId").val(data[i].user_id);
+                    $("#customerName").val(data[i].user_name);
+                    $("#access").val(data[i].access);
+
+                }
+            }
+        }
+        function updateCustomer() {
+            event.preventDefault();
+            let data = {
+                id: $("#customerId").val(),
+                customerName: $("#customerName").val(),
+                access: $("#access").val(),
+            }
+            $.post('/updateChosenCustomer', data)
+                .then(function (res) {
+                    $("#results").html("User has been updated");
+                    listCust();
+                })
+        }
+        // Disabling form submissions if there are invalid fields
+        (function () {
+            'use strict';
+            window.addEventListener('load', function () {
+                // Fetch all the forms we want to apply custom Bootstrap validation styles to
+                var forms = document.getElementsByClassName('needs-validation');
+                // Loop over them and prevent submission
+                var validation = Array.prototype.filter.call(forms, function (form) {
+                    form.addEventListener('submit', function (event) {
+                        if (form.checkValidity() === false) {
+                            event.preventDefault();
+                            event.stopPropagation();
+                        }
+                        form.classList.add('was-validated');
+                    }, false);
+                });
+            }, false);
+        })();
+        listCust();
+    </script>
+</body>
+
+</html>

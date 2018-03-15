@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+    <link rel="stylesheet" href="stylesheets/style.css">
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm"
+        crossorigin="anonymous">
+    <script src="https://code.jquery.com/jquery-3.3.1.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8="
+        crossorigin="anonymous"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl"
+        crossorigin="anonymous"></script>
+
+</head>
+
+<body>
+    <h4 id="instructionsConfirmation">Please choose a product from our inventory to purchase.</h4>
+    <div id='tableHolder'>
+        <table id="data">
+            <tr>
+                <th>Item Id</th>
+                <th>Product Name</th>
+                <th>Department</th>
+                <th>Price</th>
+                <th>Stock Quantity</th>
+            </tr>
+        </table>
+    </div>
+    <div class="modal fade" id="purchaseModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                    <h3 class="modal-title" id="exampleModalLabel"></h3>
+                </div>
+                <div class="modal-body">
+                    <form>
+                        <div class="form-group">
+                            <label id="modal-item-to-purchase"></label>
+                            <label for="quantity" class="control-label">Quantity</label>
+                            <input type="text" class="form-control" id="quantityToPurchase">
+                        </div>
+                        <button id="submit" data-toggle="modal" data-target="#purchaseModal">Submit</button>
+                    </form>
+                </div>
+
+            </div>
+        </div>
+    </div>
+    <script>
+
+        function customer() {
+            $('#data').html(`<tr>
+                <th>Item Id</th>
+                <th>Product Name</th>
+                <th>Department</th>
+                <th>Price</th>
+                <th>Stock Quantity</th>
+            </tr>`)
+            $.ajax({ url: '/customer/products', type: "GET" }).then(function (res) {
+                $("#tableHolder").show();
+                for (let i = 0; i < res.length; i++) {
+                    const newTr = $('<tr>');
+                    const itemname = res[i].product_name.replace(" ", "-")
+                    const newButton = $(`<button data-id = ${res[i].item_id} data-item = ${itemname} data-toggle="modal" data-target="#purchaseModal">`).text(`${res[i].item_id}`)
+
+                    const newIdTd = $('<td>').append(newButton);
+                    const newNameTd = $('<td>').text(`${res[i].product_name}`);
+                    const newDepartmentTd = $('<td>').text(`${res[i].department_name}`);
+                    const newPriceTd = $('<td>').text(res[i].price);
+                    const newStockTd = $('<td>').text(res[i].stock_quantity);
+
+                    newTr.append(newIdTd, newNameTd, newDepartmentTd, newPriceTd, newStockTd);
+                    $('#data').append(newTr)
+                }
+            })
+        }
+        function chooseItem() {
+            event.preventDefault();
+            const quantity = $("#quantityToPurchase").val();
+            const id = $('#modal-item-to-purchase').attr("data-id");
+            const url = `/product/${id}.${quantity}`;
+            $.ajax({ url: url, type: "POST" }).then(function (res) {
+
+                $("#instructionsConfirmation").empty();
+                $("#instructionsConfirmation").html(res)
+            });
+            customer();
+        }
+        $('#purchaseModal').on('show.bs.modal', function (event) {
+            $('.modal-title').text('');
+            $("#quantityToPurchase").val('');
+            var button = $(event.relatedTarget) // Button that triggered the modal
+            var item = button.data('item') // Extract info from data-* attributes
+            item = item.replace("-", " ");
+            var id = button.data('id');
+            var modal = $(this);
+            modal.find('.modal-title').prepend(`Please choose how many ${item}(s) you want`);
+            modal.find('#modal-item-to-purchase').attr("data-id", id);
+
+        })
+
+        customer();
+        $("#submit").on("click", chooseItem);
+    </script>
+</body>
+
+</html>

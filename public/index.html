@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Bamazon UI</title>
+    <link rel="stylesheet" href="stylesheets/style.css">
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm"
+        crossorigin="anonymous">
+    <script src="https://code.jquery.com/jquery-3.3.1.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8="
+        crossorigin="anonymous"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl"
+        crossorigin="anonymous"></script>
+</head>
+<body>
+    <h4 id="instructionsConfirmation">Please Log in</h4>
+    <button id="createAccount">Create Account</button>
+    <label for="userName">User Name:</label>
+    <input type="text" id="userName">
+    <label for="password">Password:</label>
+    <input type="text" id="password">
+    <button id="adminLogIn">Login</button>
+    <div id="results"></div>
+
+    <script>
+        // Gets log in
+        function logIn() {
+            $("#results").empty();
+            const user = $("#userName").val();
+            const pw = $("#password").val();
+            let url = `/admin/${user}/${pw}`;
+            $.ajax({ url: url, type: "POST" })
+                .then(function (res) {
+                    switch (res) {
+                        case "supervisor":
+                            window.location.replace("super.html");
+                            break;
+                        case "manager":
+                            window.location.replace("manager.html");
+                            break;
+                        case "customer":
+                            window.location.replace("customer.html");
+                            break;
+                        default:
+                            // res.end("Access Denied");
+                            $("#results").html("Log in not recognized, please try again or create an account");
+                            break;
+                    }
+
+                })
+        }
+        $("#createAccount").on("click", function () { window.location.replace("/createAccount.html") })
+        $("#adminLogIn").on("click", logIn)
+    </script>
+</body>
+
+</html>
