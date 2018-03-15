@@ -1,12 +1,140 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <title>Document</title>
+    <link rel="stylesheet" href="stylesheets/style.css">
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm"
+        crossorigin="anonymous">
+    <script src="https://code.jquery.com/jquery-3.3.1.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8="
+        crossorigin="anonymous"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl"
+        crossorigin="anonymous"></script>
+    <title>Supervisor View</title>
 </head>
+
 <body>
-    test
+    <button id="viewCustomers">View Customer Purchases</button>
+    <button id="viewProducts">View Products</button>
+    <button id="updateCustomers"><a href="updateCustomers.html">Update Customers</a></button>
+    <button id="updateProducts"> <a href="updateProducts.html">Update Products</a></button>
+    <button id="updateAllUsers"> <a href="updateAllUsers.html">Update All Users</a></button>
+    <div id="tableHolder">
+        <table class="table table-striped">
+            <thead id="tableHead"></thead>
+            <tbody id="tableBody">
+
+            </tbody>
+        </table>
+    </div>
+    <script>
+
+        // Gets all products
+        function viewProducts() {
+            $("#tableHead").empty();
+            $("#tableBody").empty();
+            $.ajax({ url: "/viewProducts", type: "GET" })
+                .then(function (res) {
+                    let data = JSON.parse(res);
+                    const headerTr = $('<tr>');
+                    const itemTh = $('<th scope="col">').text("Item Id");
+                    const productTh = $('<th scope="col">').text("Product Name");
+                    const departmentTh = $('<th scope="col">').text("Department");
+                    const priceTh = $('<th scope="col">').text("Price");
+                    const stockTh = $('<th scope="col">').text("Stock Quantity");
+                    const salesTh = $('<th scope="col">').text("Product Sales");
+                    headerTr.append(itemTh, productTh, departmentTh, priceTh, stockTh, salesTh);
+                    $("#tableHead").append(headerTr);
+                    for (let i = 0; i < data.length; i++) {
+                        let price = data[i].Price.toFixed(2);
+                        let sales;
+                        if (data[i].Product_Sales === null) {
+                            sales = 0.00;
+                        } else {
+                            sales = data[i].Product_Sales.toFixed(2);
+                        }
+                        const newTr = $('<tr>');
+                        const itemIdTd = $('<td>').text(data[i].Item_Id);
+                        const productTd = $('<td>').text(data[i].Product_Name);
+                        const departmentTd = $('<td>').text(data[i].Department);
+                        const priceTd = $('<td>').text(`$${price}`);
+                        const stockTd = $('<td>').text(data[i].Stock_Quantity);
+                        const salesTd = $('<td>').text(`$${sales}`);
+                        newTr.append(itemIdTd, productTd, departmentTd, priceTd, stockTd, salesTd);
+                        $("#tableBody").append(newTr)
+                    }
+                })
+        }
+
+        // Gets All users
+        function getUsers() {
+            $("#tableHead").empty();
+            $("#tableBody").empty();
+            $.ajax({ url: "/viewUsers", type: "GET" })
+                .then(function (res) {
+                    let data = JSON.parse(res);
+                    const headerTr = $('<tr>');
+                    const userIdTh = $('<th scope="col">').text("User Id");
+                    const userNameTh = $('<th scope="col">').text("User Name");
+                    const accessTh = $('<th scope="col">').text("Access Level");
+                    headerTr.append(userIdTh, userNameTh, accessTh);
+                    $("#tableHead").append(headerTr);
+                    for (let i = 0; i < data.length; i++) {
+                        const newTr = $('<tr>');
+                        const userIdTd = $('<td>').html(`<button class="users" id=${data[i].user_id}>${data[i].user_id}</button>`);
+                        const userNameTd = $('<td>').text(data[i].user_name);
+                        const accessTd = $('<td>').text(data[i].access);
+
+                        newTr.append(userIdTd, userNameTd, accessTd);
+                        $("#tableBody").append(newTr);
+                        document.getElementById(data[i].user_id).addEventListener("click", function () {
+                            getCustomerDetails(data[i].user_id);
+                        });
+                    }
+                })
+        }
+
+        // Gets customer details
+        function getCustomerDetails(id) {
+            $("#tableHead").empty();
+            $("#tableBody").empty();
+            $.ajax({ url: `/getCustomerDetails/${id}`, type: "POST" })
+                .then(function (res) {
+                    if (res === "false") {
+                        const newTr = $('<tr>');
+                        const responseTd = $('<td>').text("There are no purchases at this time");
+                        newTr.append(responseTd) ;
+                        $("#tableBody").append(newTr);
+                    } else {
+                        let data = JSON.parse(res);
+                        let type = typeof data;
+                        const headerTr = $('<tr>');
+                        const purchaseIdTh = $('<th scope="col">').text("Purchase ID");
+                        const productNameTh = $('<th scope="col">').text("Product");
+                        const costTh = $('<th scope="col">').text("Cost");
+                        headerTr.append(purchaseIdTh, productNameTh, costTh);
+                        $("#tableHead").append(headerTr);
+                        for (let i = 0; i < data.length; i++) {
+                            let cost = data[i].product_sales.toFixed(2)
+                            const newTr = $('<tr>');
+                            const purchaseIdTd = $('<td>').text(data[i].purchase_id);
+                            const productNameTd = $('<td>').text(data[i].product_name);
+                            const costTd = $('<td>').text(`$${cost}`);
+                            newTr.append(purchaseIdTd, productNameTd, costTd);
+                            $("#tableBody").append(newTr);
+                        }
+                    }
+
+
+                })
+        }
+
+        $("#viewProducts").on("click", viewProducts);
+        $("#viewCustomers").on("click", getUsers);
+        $(".users").on("click", getCustomerDetails);
+    </script>
 </body>
+
 </html>

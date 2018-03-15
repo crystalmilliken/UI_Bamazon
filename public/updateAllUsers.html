@@ -15,7 +15,7 @@
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl"
         crossorigin="anonymous"></script>
 
-    <title>Update Customers</title>
+    <title>Update All Users</title>
 </head>
 
 <body>
@@ -34,7 +34,7 @@
             <div class="dropdown-menu dropdown-menu-right" aria-labelledby="dropdownMenuButton" id="dropList">
             </div>
         </div>
-        <form class="needs-validation" novalidate onsubmit="updateCustomer()">
+        <form class="needs-validation" novalidate onsubmit="updateUser()">
             <div class="form-row">
 
                 <div class="col-md-3 mb-3">
@@ -68,10 +68,12 @@
         <div id="results"></div>
     </div>
     <script>
+
+        // Populates drop down
         function listCust() {
             let listOfUsers;
             $("#dropList").empty();
-            $.ajax({ url: "/viewUsers", type: "GET" })
+            $.ajax({ url: "/viewAllUsers", type: "GET" })
                 .then(function (res) {
                     let data = JSON.parse(res);
                     listOfUsers = data;
@@ -84,29 +86,6 @@
                 })
         }
 
-        function getCustomerDetails(id) {
-            $("#tableHead").empty();
-            $("#tableBody").empty();
-            $.ajax({ url: `/getCustomerDetails/${id}`, type: "POST" })
-                .then(function (res) {
-                    let data = JSON.parse(res);
-                    console.log(res)
-                    const headerTr = $('<tr>');
-                    const productNameTh = $('<th scope="col">').text("Product");
-                    const costTh = $('<th scope="col">').text("Cost");
-                    headerTr.append(productNameTh, costTh);
-                    $("#tableHead").append(headerTr);
-
-                    for (let i = 0; i < data.length; i++) {
-                        let cost = data[i].product_sales.toFixed(2)
-                        const newTr = $('<tr>');
-                        const productNameTd = $('<td>').text(data[i].product_name);
-                        const costTd = $('<td>').text(`$${cost}`);
-                        newTr.append(productNameTd, costTd);
-                        $("#tableBody").append(newTr);
-                    }
-                })
-        }
         function getCustomerInfo(evt, data) {
             const id = parseInt(evt.currentTarget.getAttribute("id"));
             for (let i = 0; i < data.length; i++) {
@@ -114,11 +93,10 @@
                     $("#customerId").val(data[i].user_id);
                     $("#customerName").val(data[i].user_name);
                     $("#access").val(data[i].access);
-
                 }
             }
         }
-        function updateCustomer() {
+        function updateUser() {
             event.preventDefault();
             let data = {
                 id: $("#customerId").val(),

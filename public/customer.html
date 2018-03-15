@@ -54,7 +54,8 @@
     </div>
     <script>
 
-        function customer() {
+        // Populates list
+        function start() {
             $('#data').html(`<tr>
                 <th>Item Id</th>
                 <th>Product Name</th>
@@ -80,6 +81,8 @@
                 }
             })
         }
+
+        // Gets chosen item to purchase, triggers modal
         function chooseItem() {
             event.preventDefault();
             const quantity = $("#quantityToPurchase").val();
@@ -90,8 +93,9 @@
                 $("#instructionsConfirmation").empty();
                 $("#instructionsConfirmation").html(res)
             });
-            customer();
+            start();
         }
+
         $('#purchaseModal').on('show.bs.modal', function (event) {
             $('.modal-title').text('');
             $("#quantityToPurchase").val('');
@@ -104,8 +108,7 @@
             modal.find('#modal-item-to-purchase').attr("data-id", id);
 
         })
-
-        customer();
+        start();
         $("#submit").on("click", chooseItem);
     </script>
 </body>

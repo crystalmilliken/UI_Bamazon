@@ -47,6 +47,19 @@ let getUsers = (function () {
     return users;
 })()
 
+let allusers = (function () {
+    let users = [];
+    connection.query('SELECT * FROM users', function (err, result) {
+        result.map((x) => {
+            users.push({
+                user_id: x.user_id,
+                user_name: x.user_name,
+                access: x.user_access_level
+            });
+        });
+    });
+    return users;
+})()
 // Gets all products
 app.get("/viewProducts", function (err, res) {
     let products = getProducts;
@@ -54,6 +67,12 @@ app.get("/viewProducts", function (err, res) {
 })
 
 // Gets all users
+app.get("/viewAllUsers", function (err, res) {
+    let users = allusers;
+    res.end(JSON.stringify(users))
+});
+
+// Gets all users with customer access level
 app.get("/viewUsers", function (err, res) {
     let users = getUsers;
     res.end(JSON.stringify(users))

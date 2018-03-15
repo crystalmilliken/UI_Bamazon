@@ -12,7 +12,7 @@
         crossorigin="anonymous"></script>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl"
         crossorigin="anonymous"></script>
-    <title>Document</title>
+    <title>Manager View</title>
 </head>
 
 <body>
@@ -29,6 +29,8 @@
         </table>
     </div>
     <script>
+
+        // Gets all products
         function viewProducts() {
             $("#tableHead").empty();
             $("#tableBody").empty();
@@ -64,6 +66,8 @@
                     }
                 })
         }
+
+        // Gets all users with access level of customer
         function getUsers() {
             $("#tableHead").empty();
             $("#tableBody").empty();
@@ -90,6 +94,8 @@
                     }
                 })
         }
+
+        // Gets customer details
         function getCustomerDetails(id) {
             $("#tableHead").empty();
             $("#tableBody").empty();
